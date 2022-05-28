@@ -5,16 +5,10 @@ use syn::{Ident, Item, ItemFn, ItemMod, Token};
 
 #[proc_macro_attribute]
 pub fn fixture(attr: TokenStream, input: TokenStream) -> TokenStream {
-  println!("before = {}", input);
-
   let fixture = syn::parse(attr).unwrap();
   let ast = syn::parse(input).unwrap();
 
-  let gen = configure_tests(fixture, ast);
-
-  println!("after = {}", gen);
-
-  gen
+  configure_tests(fixture, ast)
 }
 
 fn configure_tests(fixture: Ident, mut ast: ItemMod) -> TokenStream {
@@ -35,8 +29,6 @@ fn configure_tests(fixture: Ident, mut ast: ItemMod) -> TokenStream {
       .into();
 
       let wrapped_fn: TokenStream = wrapped_fn.into();
-
-      println!("trying to parse\n{}", wrapped_fn);
 
       let wrapped_fn: ItemFn = syn::parse(wrapped_fn).expect("could not parse wrapped function");
 
