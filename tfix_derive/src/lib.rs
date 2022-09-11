@@ -13,21 +13,32 @@ pub fn fixture(attr: TokenStream, input: TokenStream) -> TokenStream {
       let fn_name = Ident::new(&format!("{}_{}", attr, f.sig.ident), Span::call_site());
       let ident = f.sig.ident.clone();
 
-      let wrapped_fn: TokenStream2 = quote! {
-        #[test]
-        fn #fn_name() {
-          #f
-          let mut fixture = #attr::set_up();
-          #ident(&mut fixture);
-          fixture.tear_down();
+      let test_index = f.attrs.iter().position(|a| {
+        if let Some(seg) = a.path.segments.first() {
+          seg.ident == "test"
+        } else {
+          false
         }
-      };
+      });
 
-      let wrapped_fn: TokenStream = wrapped_fn.into();
+      if let Some(test_index) = test_index {
+        f.attrs.swap_remove(test_index);
+        let wrapped_fn: TokenStream2 = quote! {
+          #[test]
+          fn #fn_name() {
+            #f
+            let mut fixture = #attr::set_up();
+            #ident(&mut fixture);
+            fixture.tear_down();
+          }
+        };
 
-      let wrapped_fn: ItemFn = syn::parse(wrapped_fn).expect("could not parse wrapped function");
+        let wrapped_fn: TokenStream = wrapped_fn.into();
 
-      *f = wrapped_fn;
+        let wrapped_fn: ItemFn = syn::parse(wrapped_fn).expect("could not parse wrapped function");
+
+        *f = wrapped_fn;
+      }
     }
   }
 
