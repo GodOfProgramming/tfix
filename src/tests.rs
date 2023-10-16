@@ -15,6 +15,7 @@ impl Test {
     self.counter += 1;
   }
 
+  #[allow(unused)]
   fn fail(&mut self) {
     panic!("intentional fail");
   }
@@ -45,6 +46,7 @@ mod test_fixture {
     t.test();
   }
 
+  #[allow(unused)]
   fn should_not_be_tested(t: &mut Test) {
     t.fail();
   }
